@@ -11,6 +11,8 @@ import numpy as np
 import json
 import itertools
 import matplotlib.pyplot as plt
+import webbrowser
+
 
 def get_data(file, noise_amt=0.1):
     data_file = h5py.File(file, 'r')
@@ -57,7 +59,7 @@ def plot_data_sample(data, directory, n=64):
     num_samples = n
     grid_size = int(np.sqrt(n))
     plt.clf()
-    plt.figure(figsize=(4.2, 4))
+    plt.figure(figsize=(8.2, 8))
     plt.hold(True)
     for i,j in itertools.product(range(grid_size), range(grid_size)):
         ax = plt.subplot(grid_size, grid_size, grid_size*i + j + 1)
@@ -123,6 +125,7 @@ def make_plots(hist, model, directory, name):
     plt.subplot(1, 2, 1)
     plt.plot(x_axis, acc, label='Training Accuracy')
     plt.plot(x_axis, val_acc, label='Validation Accuracy')
+    plt.ylim([0, 1.0])
     plt.legend(loc='best')
 
     plt.subplot(1, 2, 2)
@@ -134,8 +137,12 @@ def make_plots(hist, model, directory, name):
     
 class HistoryUpdate(History):
     def __init__(self, location, name):
+        import shutil
         self.location = location
         self.name = name
+        if not os.path.exists(self.location):
+            os.makedirs(self.location)
+            shutil.copy('../html/template.html', self.location)
 
     def on_epoch_end(self, epoch, logs={}):
         History.on_epoch_end(self, epoch, logs)
@@ -146,10 +153,11 @@ def dropout_experiments():
 
     experiments = [0.2, 0.4, 0.6, 0.8]
     names = ['dropout-0.2', 'dropout-0.4', 'dropout-0.6', 'dropout-0.8']
-    X_train, y_train, X_test, y_test = get_data('./data/letters.hdf5', noise_amt=0.1)
+    X_train, y_train, X_test, y_test = get_data('./data/letters.hdf5', noise_amt=0.05)
     for name, experiment_params in reversed(zip(names, experiments)):
         dir = os.path.join(os.getcwd(), 'results', 'dropout_alpha_25_noisy', name)
         history = HistoryUpdate(dir, name)
+        webbrowser.open(os.path.join(dir, 'template.html'))
         plot_data_sample(X_train, dir, 64)
         print("Running experiment {name}".format(name=name))
         early_stopping = EarlyStopping(monitor='val_loss', patience=10)

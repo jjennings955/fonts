@@ -106,5 +106,5 @@ class DataViewer(object):
          mainloop()
 
 if __name__ == "__main__":
-    g = DataViewer(*image_getter('./data/letters.hdf5'), rows=8, cols=16)
+    g = DataViewer(*image_getter('../data/letters.hdf5'), rows=8, cols=16)
     g.run()
